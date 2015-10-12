@@ -1,0 +1,9 @@
+        program ANSI_VAX_STRUCTURE
+        STRUCTURE /PRODUCT/
+            INTEGER*4 ID
+            CHARACTER*16 NAME
+            CHARACTER*8 MODEL
+            REAL*4 COST
+            REAL*4 PRICE
+        END STRUCTURE
+        END PROGRAM
