@@ -1,3 +1,8 @@
+C     THIS IS A MODIFIED VERSION OF A TEST APPEARING IN
+C          THE ORIGINAL FORTRAN MANUAL
+C          "Fortran AUTOMATIC CODING SYSTEM FOR THE IBM 704"
+C          http://www.eah-jena.de/~kleine/history/languages/FortranAutomaticCodingSystemForTheIBM704.pdf
+
 C     PROGRAM FOR FINDING THE LARGEST VALUE
 C    X     ATTAINED BY A SET OF NUMBERS
       PROGRAM FACS46
