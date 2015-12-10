@@ -1,0 +1,8 @@
+These are the tests we've used to test our parser.
+Some of them also pass semantic analyis.
+
+All test files matching the pattern FM???.{FOR,DAT} were created by:
+The National Institute of Standards and Technology (NIST)
+
+More information can be found at their website:
+http://www.itl.nist.gov/div897/ctg/software.htm
