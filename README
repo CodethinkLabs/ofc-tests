@@ -6,3 +6,8 @@ The National Institute of Standards and Technology (NIST)
 
 More information can be found at their website:
 http://www.itl.nist.gov/div897/ctg/software.htm
+
+
+FACS46M.FOR is a modified version of the sample program found on page 46
+of the "Fortran Automatic Coding System" manual for the IBM 704.
+The M signifies that minor modifications were made to make it F77 compatible.
