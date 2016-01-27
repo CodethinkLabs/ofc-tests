@@ -13,7 +13,7 @@
 !     limitations under the License.
 
       PROGRAM type
-        CHARACTER*10 msg = "TYPE!"
+        CHARACTER*10 :: msg = "TYPE!"
         NAMELIST /grp/msg
         TYPE grp
         TYPE type
