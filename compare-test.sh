@@ -1,8 +1,13 @@
 #!/bin/bash
 
-TGFOR=$(tempfile)
-TREFOR=$(tempfile)
-TAOUT=$(tempfile)
+usage() { echo "Usage: $0 [OFC_PATH] [FORTRAN_SOURCE_PATH]" 1>&2; exit 1; }
+
+[ $# -eq 2 ] || usage
+[ -e "$2"  ] || { echo "File not found: $2"; usage; }
+
+TGFOR=$(mktemp)
+TREFOR=$(mktemp)
+TAOUT=$(mktemp)
 chmod +x $TAOUT
 
 ## Compile directly with gfortran
