@@ -49,7 +49,7 @@ $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE
 
 
 out-dir:
-	mkdir -p out out/programs out/programs/nist
+	mkdir -p out out/programs out/programs/nist out/programs/sema out/programs/negative out/programs/todo
 
 test-report : $(TEST_REPORT)
 
