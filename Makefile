@@ -10,11 +10,18 @@ PROGRAMS_DIR = programs
 PROGRAMS_NIST = $(sort $(wildcard $(PROGRAMS_DIR)/nist/*))
 PROGRAMS_BASE = $(sort $(wildcard $(PROGRAMS_DIR)/*))
 PROGRAMS = $(PROGRAMS_NIST) $(PROGRAMS_BASE)
-PROGRAMS_DUMMY = $(addsuffix .dummy, $(PROGRAMS))
+PROGRAMS_SEMA = $(sort $(wildcard $(PROGRAMS_DIR)/sema/*))
+PROGRAMS_NEGATIVE = $(sort $(wildcard $(PROGRAMS_DIR)/negative/*))
 
-STDERR_PROGRAMS = $(addprefix out/, $(addsuffix .stderr, $(PROGRAMS)))
-VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS)))
-VGO_PROGRAMS = $(addprefix out/, $(addsuffix .vgo, $(PROGRAMS)))
+PROGRAMS_DUMMY = $(addsuffix .dummy, $(PROGRAMS))
+PROGRAMS_SEMA_DUMMY = $(addsuffix .dummy, $(PROGRAMS_SEMA))
+PROGRAMS_NEGATIVE_DUMMY = $(addsuffix .dummy, $(PROGRAMS_NEGATIVE))
+
+PROGRAMS_ALL = $(PROGRAMS) $(PROGRAMS_SEMA) $(PROGRAMS_NEGATIVE)
+
+STDERR_PROGRAMS = $(addprefix out/, $(addsuffix .stderr, $(PROGRAMS_ALL)))
+VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS_ALL)))
+VGO_PROGRAMS = $(addprefix out/, $(addsuffix .vgo, $(PROGRAMS_ALL)))
 VG_FLAGS ?= -v --leak-check=full --error-exitcode=1
 
 # Older versions of valgrind don't support this flag.
@@ -24,13 +31,21 @@ VG_FLAGS += $(shell valgrind --help | grep errors-for-leak-kinds > /dev/null 2>&
 all : $(TEST_REPORT)
 
 
-test : $(PROGRAMS_DUMMY)
+test : $(PROGRAMS_DUMMY) $(PROGRAMS_SEMA_DUMMY) $(PROGRAMS_NEGATIVE_DUMMY)
 
 $(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
 	$(realpath $(FRONTEND)) $<
 	$(realpath $(COMPARE_SCRIPT)) $(realpath $(FRONTEND)) $<
 	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $<
 	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
+
+$(PROGRAMS_SEMA_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
+	$(realpath $(FRONTEND)) --sema-tree $<
+	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $<
+	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
+
+$(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
+	! $(realpath $(FRONTEND)) $<
 
 
 out-dir:
