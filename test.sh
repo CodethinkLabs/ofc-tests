@@ -128,13 +128,13 @@ function run_tests
 
 	print_html_table_start
 	print_html_table_header 'Source File' 'Standard' 'GFortran Comparison' 'Valgrind Debug' 'Valgrind Optimised'
-	for f in FM*.FOR
+	for f in $(find $(find programs -type d | grep -v stdin) -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
 		print_html_cell $f
 
 		# STANDARD
-		FRONTEND=$OFC make $f.stderr &> /dev/null
+		FRONTEND=$OFC make out/$f.stderr &> /dev/null
 		STATUS=$?
 		print_html_cell_pass_fail $STATUS
 
@@ -151,7 +151,7 @@ function run_tests
 		if [ $TEST_VG -ne 0 ] && [ $STATUS -eq 0 ]
 		then
 			# VALGRIND DEBUG
-			FRONTEND=$OFC make $f.vg &> /dev/null
+			FRONTEND=$OFC make out/$f.vg &> /dev/null
 			STATUS=$?
 			print_html_cell_pass_fail $STATUS
 		else
@@ -161,7 +161,7 @@ function run_tests
 		if [ $TEST_VGO -ne 0 ] && [ $STATUS -eq 0 ]
 		then
 			# VALGRIND OPTIMISED
-			FRONTEND=$OFC make $f.vgo &> /dev/null
+			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
 			print_html_cell_pass_fail $STATUS
 		else
