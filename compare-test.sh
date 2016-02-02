@@ -5,9 +5,12 @@ usage() { echo "Usage: $0 [OFC_PATH] [FORTRAN_SOURCE_PATH]" 1>&2; exit 1; }
 [ $# -eq 2 ] || usage
 [ -e "$2"  ] || { echo "File not found: $2"; usage; }
 
-TGFOR=$(mktemp)
-TREFOR=$(mktemp)
-TAOUT=$(mktemp)
+MKTEMP=tempfile
+which mktemp &> /dev/null && MKTEMP=mktemp
+
+TGFOR=$($MKTEMP)
+TREFOR=$($MKTEMP)
+TAOUT=$($MKTEMP)
 chmod +x $TAOUT
 
 STDIN_NAME=$(dirname $2)/stdin/$(basename $2)
