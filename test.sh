@@ -127,8 +127,8 @@ function run_tests
 	local STATUS=-1
 
 	print_html_table_start
-	print_html_table_header 'Source File' 'Standard' 'GFortran Comparison' 'Valgrind Debug' 'Valgrind Optimised'
-	for f in $(find $(find programs -type d | grep -v stdin) -maxdepth 1 -type f | sort)
+	print_html_table_header 'Source File' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Optimised)'
+	for f in $(find $(find programs -type d | grep -v stdin | grep -v stdout) -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
 		print_html_cell $f

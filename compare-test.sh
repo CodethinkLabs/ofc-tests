@@ -14,22 +14,28 @@ TAOUT=$($MKTEMP)
 chmod +x $TAOUT
 
 STDIN_NAME=$(dirname $2)/stdin/$(basename $2)
+STDOUT_NAME=$(dirname $2)/stdout/$(basename $2)
 
 ## Compile directly with gfortran
-gfortran $2 -o $TAOUT &> /dev/null
-if [ -e $TAOUT ]
+if [ -f $STDOUT_NAME ]
 then
-	if [ -f $STDIN_NAME ]
-	then
-		cat $STDIN_NAME | $TAOUT > $TGFOR
-	else
-		$TAOUT > $TGFOR
-	fi
+	cp $STDOUT_NAME $TGFOR
 else
-	rm $TAOUT &> /dev/null
-	rm $TGFOR &> /dev/null
-	rm $TREFOR &> /dev/null
-	exit 1
+	gfortran $2 -o $TAOUT &> /dev/null
+	if [ -e $TAOUT ]
+	then
+		if [ -f $STDIN_NAME ]
+		then
+			cat $STDIN_NAME | $TAOUT > $TGFOR
+		else
+			$TAOUT > $TGFOR
+		fi
+	else
+		rm $TAOUT &> /dev/null
+		rm $TGFOR &> /dev/null
+		rm $TREFOR &> /dev/null
+		exit 1
+	fi
 fi
 
 ## Compile with gfortran OFC output

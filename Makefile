@@ -7,11 +7,11 @@ TEST_REPORT = out/test.html
 TEST_REPORT_LITE = out/test-lite.html
 
 PROGRAMS_DIR = programs
-PROGRAMS_NIST = $(sort $(wildcard $(PROGRAMS_DIR)/nist/*))
-PROGRAMS_BASE = $(sort $(wildcard $(PROGRAMS_DIR)/*))
+PROGRAMS_NIST = $(sort $(shell find $(PROGRAMS_DIR)/nist -maxdepth 1 -type f))
+PROGRAMS_BASE = $(sort $(shell find $(PROGRAMS_DIR) -maxdepth 1 -type f))
 PROGRAMS = $(PROGRAMS_NIST) $(PROGRAMS_BASE)
-PROGRAMS_SEMA = $(sort $(wildcard $(PROGRAMS_DIR)/sema/*))
-PROGRAMS_NEGATIVE = $(sort $(wildcard $(PROGRAMS_DIR)/negative/*))
+PROGRAMS_SEMA = $(sort $(shell find $(PROGRAMS_DIR)/sema -maxdepth 1 -type f))
+PROGRAMS_NEGATIVE = $(sort $(shell find $(PROGRAMS_DIR)/negative -maxdepth 1 -type f))
 
 PROGRAMS_DUMMY = $(addsuffix .dummy, $(PROGRAMS))
 PROGRAMS_SEMA_DUMMY = $(addsuffix .dummy, $(PROGRAMS_SEMA))
