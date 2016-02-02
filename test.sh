@@ -134,7 +134,7 @@ function run_tests
 		print_html_cell $f
 
 		# STANDARD
-		FRONTEND=$OFC make $f &> /dev/null
+		FRONTEND=$OFC make $f.stderr &> /dev/null
 		STATUS=$?
 		print_html_cell_pass_fail $STATUS
 
