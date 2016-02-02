@@ -9,6 +9,10 @@ TARGETS = $(sort $(wildcard $(TEST_DIR)/*.FOR))
 STDERR_TARGETS = $(addsuffix .stderr, $(TARGETS))
 VG_TARGETS = $(addsuffix .vg, $(TARGETS))
 VGO_TARGETS = $(addsuffix .vgo, $(TARGETS))
+VG_FLAGS ?= -v --leak-check=full --error-exitcode=1
+
+# Older versions of valgrind don't support this flag.
+VG_FLAGS += $(shell valgrind --help | grep errors-for-leak-kinds > /dev/null 2>&1 && echo "--errors-for-leak-kinds=all")
 
 
 all : $(TEST_REPORT)
@@ -18,8 +22,8 @@ test : $(TARGETS)
 
 $(TARGETS) : $(FRONTEND) $(FRONTEND_DEBUG)
 	$(realpath $(FRONTEND)) $@
-	valgrind -v --leak-check=full --errors-for-leak-kinds=all --track-origins=yes --error-exitcode=1 $(realpath $(FRONTEND_DEBUG)) $(patsubst %.vg, %, $@)
-	valgrind -v --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 $(realpath $(FRONTEND)) $(patsubst %.vgo, %, $@)
+	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $(patsubst %.vg, %, $@)
+	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $(patsubst %.vgo, %, $@)
 
 
 test-report : $(TEST_REPORT)
@@ -40,10 +44,10 @@ valgrind: $(VG_TARGETS)
 valgrind-optimized: $(VGO_TARGETS)
 
 $(VG_TARGETS) : %.vg : % $(FRONTEND_DEBUG)
-	valgrind -v --leak-check=full --errors-for-leak-kinds=all --track-origins=yes --error-exitcode=1 $(realpath $(FRONTEND_DEBUG)) $(patsubst %.vg, %, $@) > $@ 2>&1
+	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $(patsubst %.vg, %, $@) > $@ 2>&1
 
 $(VGO_TARGETS) : %.vgo : % $(FRONTEND)
-	valgrind -v --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 $(realpath $(FRONTEND)) $(patsubst %.vgo, %, $@) > $@ 2>&1
+	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $(patsubst %.vgo, %, $@) > $@ 2>&1
 
 
 clean:
