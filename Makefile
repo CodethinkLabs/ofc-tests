@@ -2,6 +2,7 @@ FRONTEND ?= ofc
 FRONTEND_DEBUG ?= $(FRONTEND)-debug
 
 TEST_SCRIPT = test.sh
+COMPARE_SCRIPT = compare-test.sh
 TEST_REPORT = out/test.html
 TEST_REPORT_LITE = out/test-lite.html
 
@@ -25,8 +26,9 @@ all : $(TEST_REPORT)
 
 test : $(PROGRAMS_DUMMY)
 
-$(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG)
+$(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
 	$(realpath $(FRONTEND)) $<
+	$(realpath $(COMPARE_SCRIPT)) $(realpath $(FRONTEND)) $<
 	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $<
 	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
 
