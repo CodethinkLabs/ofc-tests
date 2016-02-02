@@ -52,6 +52,8 @@ function print_html_report_info
 
 function print_html_table_start
 {
+	printf "<br>"
+	printf "<h2>%s</h2>\n" "$1"
 	printf "<table>\n"
 }
 
@@ -75,6 +77,16 @@ function print_html_table_row_start
 function print_html_cell
 {
 	printf "<td>%s</td>" "$1"
+}
+
+function print_html_cell_bold
+{
+	printf "<td><b>%s</b></td>" "$1"
+}
+
+function print_html_cell_centre
+{
+	printf "<td align=center>%s</td>" "$1"
 }
 
 function print_html_cell_fail
@@ -118,32 +130,72 @@ printf "%s" "</body>
 </html>"
 }
 
-function run_tests
+function run_tests_dir
 {
-	local OFC=$1
-	local TEST_VG=$2
-	local TEST_VGO=$3
+	local TEST_DIR=$1
+	local OFC=$2
+	local TEST_VG=$3
+	local TEST_VGO=$4
+	local TEST_BEHAVIOUR=1
+
+	local TEST_DIR_NAME=$(basename $TEST_DIR)
+	local IS_NEGATIVE=0
+
+	if [ "$TEST_DIR_NAME" == "sema" ]
+	then
+		TEST_VG=0
+		TEST_VGO=0
+		TEST_BEHAVIOUR=0
+	fi
+
+	if [ "$TEST_DIR_NAME" == "negative" ]
+	then
+		IS_NEGATIVE=1
+		TEST_VG=0
+		TEST_VGO=0
+		TEST_BEHAVIOUR=0
+	fi
 
 	local STATUS=-1
 
-	print_html_table_start
+	local TOTAL=0
+	local PASS=0
+	local PASS_BEHAVIOUR=0
+	local PASS_VG=0
+	local PASS_VGO=0
+
+	print_html_table_start $TEST_DIR/
 	print_html_table_header 'Source File' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Optimised)'
-	for f in $(find $(find programs -type d | grep -v stdin | grep -v stdout) -maxdepth 1 -type f | sort)
+	for f in $(find $TEST_DIR -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
-		print_html_cell $f
+		print_html_cell $(basename $f)
 
 		# STANDARD
 		FRONTEND=$OFC make out/$f.stderr &> /dev/null
 		STATUS=$?
+
+		if [ $IS_NEGATIVE -ne 0 ]
+		then
+			if [ $STATUS -eq 0 ]
+			then
+				STATUS=-1
+			else
+				STATUS=0
+			fi
+		fi
+
+		[ $STATUS -eq 0 ] && let "PASS += 1"
+
 		print_html_cell_pass_fail $STATUS
 
-		if [ $STATUS -eq 0 ]
+		if [ $TEST_BEHAVIOUR -ne 0 ] && [ $STATUS -eq 0 ]
 		then
 			# GFORTRAN COMPARISON
 			./compare-test.sh $OFC $f &> /dev/null
 			STATUS=$?
 			print_html_cell_pass_fail $STATUS
+			[ $STATUS -eq 0 ] && let "PASS_BEHAVIOUR += 1"
 		else
 			print_html_cell_ignored
 		fi
@@ -153,6 +205,7 @@ function run_tests
 			# VALGRIND DEBUG
 			FRONTEND=$OFC make out/$f.vg &> /dev/null
 			STATUS=$?
+			[ $STATUS -eq 0 ] && let "PASS_VG += 1"
 			print_html_cell_pass_fail $STATUS
 		else
 			print_html_cell_ignored
@@ -163,20 +216,57 @@ function run_tests
 			# VALGRIND OPTIMISED
 			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
+			[ $STATUS -eq 0 ] && let "PASS_VGO += 1"
 			print_html_cell_pass_fail $STATUS
 		else
 			print_html_cell_ignored
 		fi
 
-		if [ $STATUS -eq 0 ]
-		then
-			let "PASS += 1"
-		fi
-
 		let "TOTAL += 1"
 		print_html_table_row_end
 	done
+
+	print_html_table_row_start
+	print_html_cell_bold "Total"
+
+	print_html_cell_centre "$PASS / $TOTAL"
+
+	if [ $TEST_BEHAVIOUR -ne 0 ]
+	then
+		print_html_cell_centre "$PASS_BEHAVIOUR / $PASS"
+	else
+		print_html_cell_ignored
+	fi
+
+	if [ $TEST_VG -ne 0 ]
+	then
+		print_html_cell_centre "$PASS_VG / $PASS"
+	else
+		print_html_cell_ignored
+	fi
+
+	if [ $TEST_VGO -ne 0 ]
+	then
+		print_html_cell_centre "$PASS_VGO / $PASS_VG"
+	else
+		print_html_cell_ignored
+	fi
+
+	print_html_table_row_end
+
 	print_html_table_end
+}
+
+function run_tests
+{
+	local OFC=$1
+	local TEST_VG=$2
+	local TEST_VGO=$3
+
+	for f in $(find programs -type d | grep -v stdin | grep -v stdout)
+	do
+		run_tests_dir $f $OFC $TEST_VG $TEST_VGO
+	done
 }
 
 PASS=0
