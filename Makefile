@@ -11,9 +11,11 @@ VGO_TARGETS = $(addsuffix .vgo, $(TARGETS))
 
 all : $(TEST_REPORT)
 
-test : $(TEST_REPORT)
+test : $(TARGETS) $(VG_TARGETS) $(VGO_TARGETS)
 
-test-lite : $(TEST_REPORT_LITE)
+test-report : $(TEST_REPORT)
+
+test-report-lite : $(TEST_REPORT_LITE)
 
 clean:
 	rm -f $(VG_TARGETS) $(VGO_TARGETS) $(TEST_REPORT) $(TEST_REPORT_LITE)
@@ -37,4 +39,4 @@ valgrind: $(VG_TARGETS)
 
 valgrind-optimized: $(VGO_TARGETS)
 
-.PHONY : all clean test test-lite $(TARGETS) valgrind valgrind-optimized
+.PHONY : all clean test test-report test-report-lite $(TARGETS) valgrind valgrind-optimized
