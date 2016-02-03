@@ -263,7 +263,7 @@ function run_tests
 	local TEST_VG=$2
 	local TEST_VGO=$3
 
-	for f in $(find programs -type d | grep -v stdin | grep -v stdout)
+	for f in $(find programs -type d | grep -v stdin | grep -v stdout | sort)
 	do
 		run_tests_dir $f $OFC $TEST_VG $TEST_VGO
 	done
