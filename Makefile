@@ -47,16 +47,16 @@ $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE
 
 
 out-dir:
-	mkdir -p out out/programs out/programs/nist out/programs/sema out/programs/negative out/programs/todo
+	@mkdir -p out out/programs out/programs/nist out/programs/sema out/programs/negative out/programs/todo
 
 test-report : $(TEST_REPORT)
 
 test-report-lite : $(TEST_REPORT_LITE)
 
-$(TEST_REPORT) : out-dir $(TEST_SCRIPT)
+$(TEST_REPORT) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
 	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 1 1 > $(TEST_REPORT)
 
-$(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT)
+$(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
 	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 0 > $(TEST_REPORT_LITE)
 
 $(STDERR_PROGRAMS) : out/%.stderr : % out-dir $(FRONTEND)
