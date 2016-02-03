@@ -13,8 +13,11 @@ TREFOR=$($MKTEMP)
 TAOUT=$($MKTEMP)
 chmod +x $TAOUT
 
-STDIN_NAME=$(realpath $(dirname $2)/stdin/$(basename $2))
+STDIN_NAME=$(dirname $2)/stdin/$(basename $2)
 STDOUT_NAME=$(dirname $2)/stdout/$(basename $2)
+
+[ -f $STDIN_NAME  ] && STDIN_NAME=$(realpath $STDIN_NAME)
+[ -f $STDOUT_NAME ] && STDOUT_NAME=$(realpath $STDOUT_NAME)
 
 ## Compile directly with gfortran
 if [ -f $STDOUT_NAME ]
