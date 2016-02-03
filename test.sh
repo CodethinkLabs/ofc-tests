@@ -269,18 +269,7 @@ function run_tests
 	done
 }
 
-PASS=0
-TOTAL=0
-
 print_html_header
 print_html_report_info
 run_tests $1 ${2:-1} ${3:-1}
-printf "<p>Passed %s of %s</p>" $PASS $TOTAL
 print_html_footer
-
-if [ $PASS -ne $TOTAL ]
-then
-	exit 1
-else
-	exit 0
-fi
