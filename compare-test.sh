@@ -11,20 +11,23 @@ which mktemp &> /dev/null && MKTEMP=mktemp
 TGFOR=$($MKTEMP)
 TREFOR=$($MKTEMP)
 TAOUT=$($MKTEMP)
-chmod +x $TAOUT
+chmod +x $TAOUT &> /dev/null
 
-STDIN_NAME=$(dirname $2)/stdin/$(basename $2)
-STDOUT_NAME=$(dirname $2)/stdout/$(basename $2)
+FRONTEND=$1
 
-[ -f $STDIN_NAME  ] && STDIN_NAME=$(realpath $STDIN_NAME)
-[ -f $STDOUT_NAME ] && STDOUT_NAME=$(realpath $STDOUT_NAME)
+SRC_PATH=$(realpath $2)
+SRC_NAME=$(basename $SRC_PATH)
+SRC_DIR=$(dirname $SRC_PATH)
+
+STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
+STDOUT_NAME=$SRC_DIR/stdout/$SRC_NAME
 
 ## Compile directly with gfortran
 if [ -f $STDOUT_NAME ]
 then
 	cp $STDOUT_NAME $TGFOR
 else
-	gfortran $2 -o $TAOUT &> /dev/null
+	gfortran $SRC_PATH -o $TAOUT &> /dev/null
 	if [ -e $TAOUT ]
 	then
 		pushd $(dirname $TAOUT)
@@ -36,6 +39,7 @@ else
 			$TAOUT > $TGFOR
 		fi
 		popd
+		rm $TAOUT &> /dev/null
 	else
 		rm $TAOUT &> /dev/null
 		rm $TGFOR &> /dev/null
@@ -45,7 +49,7 @@ else
 fi
 
 ## Compile with gfortran OFC output
-$1 --sema-tree $2 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
+$FRONTEND --sema-tree $SRC_PATH 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
 if [ -e $TAOUT ]
 then
 	pushd $(dirname $TAOUT)
@@ -57,8 +61,8 @@ then
 		$TAOUT > $TREFOR
 	fi
 	popd
-else
 	rm $TAOUT &> /dev/null
+else
 	rm $TGFOR &> /dev/null
 	rm $TREFOR &> /dev/null
 	exit 1
@@ -67,13 +71,11 @@ fi
 diff $TGFOR $TREFOR &> /dev/null
 if [ $? -eq 0 ]
 then
-	rm $TAOUT &> /dev/null
 	rm $TGFOR &> /dev/null
 	rm $TREFOR &> /dev/null
 	exit 0
 fi
 
-rm $TAOUT &> /dev/null
 rm $TGFOR &> /dev/null
 rm $TREFOR &> /dev/null
 exit 1
