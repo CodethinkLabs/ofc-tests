@@ -12,12 +12,13 @@ PROGRAMS_BASE = $(sort $(shell find $(PROGRAMS_DIR) -maxdepth 1 -type f))
 PROGRAMS = $(PROGRAMS_NIST) $(PROGRAMS_BASE)
 PROGRAMS_SEMA = $(sort $(shell find $(PROGRAMS_DIR)/sema -maxdepth 1 -type f))
 PROGRAMS_NEGATIVE = $(sort $(shell find $(PROGRAMS_DIR)/negative -maxdepth 1 -type f))
+PROGRAMS_TODO = $(sort $(shell find $(PROGRAMS_DIR)/todo -maxdepth 1 -type f))
 
 PROGRAMS_DUMMY = $(addsuffix .dummy, $(PROGRAMS))
 PROGRAMS_SEMA_DUMMY = $(addsuffix .dummy, $(PROGRAMS_SEMA))
 PROGRAMS_NEGATIVE_DUMMY = $(addsuffix .dummy, $(PROGRAMS_NEGATIVE))
 
-PROGRAMS_ALL = $(PROGRAMS) $(PROGRAMS_SEMA) $(PROGRAMS_NEGATIVE)
+PROGRAMS_ALL = $(PROGRAMS) $(PROGRAMS_SEMA) $(PROGRAMS_NEGATIVE) $(PROGRAMS_TODO)
 
 STDERR_PROGRAMS = $(addprefix out/, $(addsuffix .stderr, $(PROGRAMS_ALL)))
 VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS_ALL)))
