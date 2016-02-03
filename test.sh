@@ -158,7 +158,6 @@ function run_tests_dir
 	local TEST_DIR=$1
 	local OFC=$2
 	local TEST_VG=$3
-	local TEST_VGO=$4
 	local TEST_BEHAVIOUR=1
 
 	local TEST_DIR_NAME=$(basename $TEST_DIR)
@@ -186,10 +185,10 @@ function run_tests_dir
 	local PASS=0
 	local PASS_BEHAVIOUR=0
 	local PASS_VG=0
-	local PASS_VGO=0
+	local FAIL_VGO=0
 
 	print_html_table_start $TEST_DIR/
-	print_html_table_header 'Source File' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Optimised)'
+	print_html_table_header 'Source File' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Debug)'
 	for f in $(find $TEST_DIR -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
@@ -226,23 +225,26 @@ function run_tests_dir
 
 		if [ $TEST_VG -ne 0 ] && [ $STATUS -eq 0 ]
 		then
-			# VALGRIND DEBUG
-			FRONTEND=$OFC make out/$f.vg &> /dev/null
-			STATUS=$?
-			[ $STATUS -eq 0 ] && let "PASS_VG += 1"
-			print_html_cell_pass_fail $STATUS "out/$f.vg"
-		else
-			print_html_cell_ignored
-		fi
-
-		if [ $TEST_VGO -ne 0 ] && [ $STATUS -eq 0 ]
-		then
 			# VALGRIND OPTIMISED
 			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
 			[ $STATUS -eq 0 ] && let "PASS_VGO += 1"
 			print_html_cell_pass_fail $STATUS "out/$f.vgo"
+
+			if [ $STATUS -ne 0 ]
+			then
+				"FAIL_VGO += 1"
+
+				# VALGRIND DEBUG
+				FRONTEND=$OFC make out/$f.vg &> /dev/null
+				STATUS=$?
+				[ $STATUS -eq 0 ] && let "PASS_VG += 1"
+				print_html_cell_pass_fail $STATUS "out/$f.vg"
+			else
+				print_html_cell_ignored
+			fi
 		else
+			print_html_cell_ignored
 			print_html_cell_ignored
 		fi
 
@@ -264,15 +266,16 @@ function run_tests_dir
 
 	if [ $TEST_VG -ne 0 ]
 	then
-		print_html_cell_centre "$PASS_VG / $PASS"
+		print_html_cell_centre "$PASS_VGO / $PASS"
+
+		if [ $FAIL_VGO -ne 0]
+		then
+			print_html_cell_centre "$PASS_VG / $FAIL_VGO"
+		else
+			print_html_cell_ignored
+		fi
 	else
 		print_html_cell_ignored
-	fi
-
-	if [ $TEST_VGO -ne 0 ]
-	then
-		print_html_cell_centre "$PASS_VGO / $PASS_VG"
-	else
 		print_html_cell_ignored
 	fi
 
@@ -285,11 +288,10 @@ function run_tests
 {
 	local OFC=$1
 	local TEST_VG=$2
-	local TEST_VGO=$3
 
 	for f in $(find programs -type d | grep -v stdin | grep -v stdout | sort)
 	do
-		run_tests_dir $f $OFC $TEST_VG $TEST_VGO $GIT_COMMIT $GIT_BRANCH
+		run_tests_dir $f $OFC $TEST_VG $GIT_COMMIT $GIT_BRANCH
 	done
 }
 
@@ -303,5 +305,5 @@ TESTS_GIT_URL="https://github.com/CodethinkLabs/ofc-tests"
 
 print_html_header
 print_html_report_info
-run_tests $1 ${2:-1} ${3:-1}
+run_tests $1 ${2:-1}
 print_html_footer

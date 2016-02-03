@@ -57,10 +57,10 @@ test-report : $(TEST_REPORT)
 test-report-lite : $(TEST_REPORT_LITE)
 
 $(TEST_REPORT) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
-	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 1 1 > $(TEST_REPORT)
+	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 1 > $(TEST_REPORT)
 
 $(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
-	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 0 > $(TEST_REPORT_LITE)
+	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 > $(TEST_REPORT_LITE)
 
 $(STDERR_PROGRAMS) : out/%.stderr : % out-dir $(FRONTEND)
 	@$(realpath $(FRONTEND)) $< 2> $@
