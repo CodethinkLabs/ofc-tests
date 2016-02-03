@@ -22,7 +22,7 @@ PROGRAMS_ALL = $(PROGRAMS) $(PROGRAMS_SEMA) $(PROGRAMS_NEGATIVE)
 STDERR_PROGRAMS = $(addprefix out/, $(addsuffix .stderr, $(PROGRAMS_ALL)))
 VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS_ALL)))
 VGO_PROGRAMS = $(addprefix out/, $(addsuffix .vgo, $(PROGRAMS_ALL)))
-VG_FLAGS ?= -v --leak-check=full --error-exitcode=1
+VG_FLAGS ?= --leak-check=full --error-exitcode=1
 
 # Older versions of valgrind don't support this flag.
 VG_FLAGS += $(shell valgrind --help | grep errors-for-leak-kinds > /dev/null 2>&1 && echo "--errors-for-leak-kinds=all")
@@ -36,12 +36,10 @@ test : $(PROGRAMS_DUMMY) $(PROGRAMS_SEMA_DUMMY) $(PROGRAMS_NEGATIVE_DUMMY)
 $(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
 	$(realpath $(FRONTEND)) $<
 	$(realpath $(COMPARE_SCRIPT)) $(realpath $(FRONTEND)) $<
-	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $<
 	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
 
 $(PROGRAMS_SEMA_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
 	$(realpath $(FRONTEND)) --sema-tree $<
-	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $<
 	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
 
 $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
@@ -69,10 +67,10 @@ valgrind: $(VG_PROGRAMS)
 valgrind-optimized: $(VGO_PROGRAMS)
 
 $(VG_PROGRAMS) : out/%.vg : % out-dir $(FRONTEND_DEBUG)
-	valgrind $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $< > $@ 2>&1
+	valgrind -v $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $< > $@ 2>&1
 
 $(VGO_PROGRAMS) : out/%.vgo : % out-dir $(FRONTEND)
-	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $< > $@ 2>&1
+	valgrind -v $(VG_FLAGS) $(realpath $(FRONTEND)) $< > $@ 2>&1
 
 
 clean:
