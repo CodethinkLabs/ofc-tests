@@ -157,6 +157,7 @@ function run_tests_dir
 	fi
 
 	local STATUS=-1
+	local STATUS_BEHAVIOUR=-1
 
 	local TOTAL=0
 	local PASS=0
@@ -193,9 +194,9 @@ function run_tests_dir
 		then
 			# GFORTRAN COMPARISON
 			./compare-test.sh $OFC $f &> /dev/null
-			STATUS=$?
-			print_html_cell_pass_fail $STATUS
-			[ $STATUS -eq 0 ] && let "PASS_BEHAVIOUR += 1"
+			STATUS_BEHAVIOUR=$?
+			print_html_cell_pass_fail $STATUS_BEHAVIOUR
+			[ $STATUS_BEHAVIOUR -eq 0 ] && let "PASS_BEHAVIOUR += 1"
 		else
 			print_html_cell_ignored
 		fi
