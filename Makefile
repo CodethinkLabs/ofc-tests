@@ -6,6 +6,8 @@ COMPARE_SCRIPT = compare-test.sh
 TEST_REPORT = out/test.html
 TEST_REPORT_LITE = out/test-lite.html
 
+export TESTS_GIT_COMMIT = $(shell git rev-parse HEAD)
+
 PROGRAMS_DIR = programs
 PROGRAMS_NIST = $(sort $(shell find $(PROGRAMS_DIR)/nist -maxdepth 1 -type f))
 PROGRAMS_BASE = $(sort $(shell find $(PROGRAMS_DIR) -maxdepth 1 -type f))

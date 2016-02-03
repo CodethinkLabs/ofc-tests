@@ -47,13 +47,16 @@ td
 function print_html_report_info
 {
 	printf "<p>This is the test report for Open Fortran Compiler (OFC).</p>"
+	printf "<p>Branch: %s</p>" "$OFC_GIT_BRANCH"
+	printf "<p>SHA1: <a href=\"%s/tree/%s\">%s</a></p>" "$OFC_GIT_URL" "$OFC_GIT_COMMIT" "$OFC_GIT_COMMIT"
 	printf "<p>Test run started: %s</p>" "$(date -u)"
 }
 
 function print_html_table_start
 {
-	printf "<br>"
-	printf "<h2>%s</h2>\n" "$1"
+	local HEADER=$1
+
+	printf "<h2>%s</h2>\n" "$HEADER"
 	printf "<table>\n"
 }
 
@@ -76,26 +79,44 @@ function print_html_table_row_start
 
 function print_html_cell
 {
-	printf "<td>%s</td>" "$1"
+	local TEXT=$1
+
+	printf "<td>%s</td>" "$TEXT"
 }
 
 function print_html_cell_bold
 {
-	printf "<td><b>%s</b></td>" "$1"
+	local TEXT=$1
+
+	printf "<td><b>%s</b></td>" "$TEXT"
 }
 
 function print_html_cell_centre
 {
-	printf "<td align=center>%s</td>" "$1"
+	local TEXT=$1
+
+	printf "<td align=center>%s</td>" "$TEXT"
+}
+
+function print_html_cell_test_file
+{
+	local FILE_PATH=$1
+
+	printf "<td><a href=\"$TESTS_GIT_URL/blob/$TESTS_GIT_COMMIT/$1\">%s</a></td>" "$(basename $FILE_PATH)"
 }
 
 function print_html_cell_fail
 {
-	printf "<td align=center><font color=\"#bf0000\">FAIL (%d)</font></td>" $1
+	local STATUS=$1
+	local LINK=$2
+
+	printf "<td align=center><font color=\"#bf0000\">FAIL (%d)</font></td>" "$STATUS"
 }
 
 function print_html_cell_pass
 {
+	local LINK=$1
+
 	printf '<td align=center><font color="#00bf00">PASS</font></td>'
 }
 
@@ -106,11 +127,13 @@ function print_html_cell_ignored
 
 function print_html_cell_pass_fail
 {
-	if [ $1 -eq 0 ]
+	local STATUS=$1
+
+	if [ $STATUS -eq 0 ]
 	then
 		print_html_cell_pass
 	else
-		print_html_cell_fail $1
+		print_html_cell_fail $STATUS
 	fi
 }
 
@@ -170,7 +193,7 @@ function run_tests_dir
 	for f in $(find $TEST_DIR -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
-		print_html_cell $(basename $f)
+		print_html_cell_test_file $f
 
 		# STANDARD
 		FRONTEND=$OFC make out/$f.stderr &> /dev/null
@@ -207,7 +230,7 @@ function run_tests_dir
 			FRONTEND=$OFC make out/$f.vg &> /dev/null
 			STATUS=$?
 			[ $STATUS -eq 0 ] && let "PASS_VG += 1"
-			print_html_cell_pass_fail $STATUS
+			print_html_cell_pass_fail $STATUS "out/$f.vg"
 		else
 			print_html_cell_ignored
 		fi
@@ -218,7 +241,7 @@ function run_tests_dir
 			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
 			[ $STATUS -eq 0 ] && let "PASS_VGO += 1"
-			print_html_cell_pass_fail $STATUS
+			print_html_cell_pass_fail $STATUS "out/$f.vgo"
 		else
 			print_html_cell_ignored
 		fi
@@ -266,9 +289,17 @@ function run_tests
 
 	for f in $(find programs -type d | grep -v stdin | grep -v stdout | sort)
 	do
-		run_tests_dir $f $OFC $TEST_VG $TEST_VGO
+		run_tests_dir $f $OFC $TEST_VG $TEST_VGO $GIT_COMMIT $GIT_BRANCH
 	done
 }
+
+# Ensure global git variables are set by make files
+[[ -v OFC_GIT_COMMIT   ]] || { echo "TEST.SH ERROR: OFC_GIT_COMMIT not set"   1>&2; exit 1; }
+[[ -v OFC_GIT_BRANCH   ]] || { echo "TEST.SH ERROR: OFC_GIT_BRANCH not set"   1>&2; exit 1; }
+[[ -v TESTS_GIT_COMMIT ]] || { echo "TEST.SH ERROR: TESTS_GIT_COMMIT not set" 1>&2; exit 1; }
+
+OFC_GIT_URL="https://github.com/CodethinkLabs/ofc"
+TESTS_GIT_URL="https://github.com/CodethinkLabs/ofc-tests"
 
 print_html_header
 print_html_report_info
