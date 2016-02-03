@@ -35,16 +35,16 @@ all : $(TEST_REPORT)
 test : $(PROGRAMS_DUMMY) $(PROGRAMS_SEMA_DUMMY) $(PROGRAMS_NEGATIVE_DUMMY)
 
 $(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	$(realpath $(FRONTEND)) $<
+	$(realpath $(FRONTEND)) --no-warn $<
 	$(realpath $(COMPARE_SCRIPT)) $(realpath $(FRONTEND)) $<
-	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
+	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) $<
 
 $(PROGRAMS_SEMA_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	$(realpath $(FRONTEND)) --sema-tree $<
-	valgrind $(VG_FLAGS) $(realpath $(FRONTEND)) $<
+	$(realpath $(FRONTEND)) --no-warn  --sema-tree $<
+	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) $<
 
 $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	! $(realpath $(FRONTEND)) $<
+	! $(realpath $(FRONTEND)) --no-warn $< 2> /dev/null
 
 
 out-dir:
