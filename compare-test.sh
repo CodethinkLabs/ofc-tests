@@ -13,7 +13,7 @@ TREFOR=$($MKTEMP)
 TAOUT=$($MKTEMP)
 chmod +x $TAOUT
 
-STDIN_NAME=$(dirname $2)/stdin/$(basename $2)
+STDIN_NAME=$(realpath $(dirname $2)/stdin/$(basename $2))
 STDOUT_NAME=$(dirname $2)/stdout/$(basename $2)
 
 ## Compile directly with gfortran
@@ -24,12 +24,15 @@ else
 	gfortran $2 -o $TAOUT &> /dev/null
 	if [ -e $TAOUT ]
 	then
+		pushd $(dirname $TAOUT)
+		rm -f fort.*
 		if [ -f $STDIN_NAME ]
 		then
 			cat $STDIN_NAME | $TAOUT > $TGFOR
 		else
 			$TAOUT > $TGFOR
 		fi
+		popd
 	else
 		rm $TAOUT &> /dev/null
 		rm $TGFOR &> /dev/null
@@ -42,12 +45,15 @@ fi
 $1 --sema-tree $2 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
 if [ -e $TAOUT ]
 then
+	pushd $(dirname $TAOUT)
+	rm -f fort.*
 	if [ -f $STDIN_NAME ]
 	then
 		cat $STDIN_NAME | $TAOUT > $TREFOR
 	else
 		$TAOUT > $TREFOR
 	fi
+	popd
 else
 	rm $TAOUT &> /dev/null
 	rm $TGFOR &> /dev/null
