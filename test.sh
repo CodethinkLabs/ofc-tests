@@ -267,7 +267,7 @@ function run_tests_dir
 	then
 		print_html_cell_centre "$PASS_VGO / $PASS"
 
-		if [ $FAIL_VGO -ne 0]
+		if [ $FAIL_VGO -ne 0 ]
 		then
 			print_html_cell_centre "$PASS_VG / $FAIL_VGO"
 		else
