@@ -166,7 +166,6 @@ function run_tests_dir
 	if [ "$TEST_DIR_NAME" == "sema" ]
 	then
 		TEST_VG=0
-		TEST_VGO=0
 		TEST_BEHAVIOUR=0
 	fi
 
@@ -174,7 +173,6 @@ function run_tests_dir
 	then
 		IS_NEGATIVE=1
 		TEST_VG=0
-		TEST_VGO=0
 		TEST_BEHAVIOUR=0
 	fi
 
@@ -185,6 +183,7 @@ function run_tests_dir
 	local PASS=0
 	local PASS_BEHAVIOUR=0
 	local PASS_VG=0
+	local PASS_VGO=0
 	local FAIL_VGO=0
 
 	print_html_table_start $TEST_DIR/
