@@ -110,14 +110,14 @@ function print_html_cell_fail
 	local STATUS=$1
 	local LINK=$2
 
-	printf "<td align=center><font color=\"#bf0000\">FAIL (%d)</font></td>" "$STATUS"
+	printf "<td align=center><font color=\"#bf0000\">FAIL (%d)</font>%s</td>" "$STATUS" "$LINK"
 }
 
 function print_html_cell_pass
 {
 	local LINK=$1
 
-	printf '<td align=center><font color="#00bf00">PASS</font></td>'
+	printf '<td align=center><font color="#00bf00">PASS</font>%s</td>' "$LINK"
 }
 
 function print_html_cell_ignored
@@ -128,12 +128,13 @@ function print_html_cell_ignored
 function print_html_cell_pass_fail
 {
 	local STATUS=$1
+	local LINK=$2
 
 	if [ $STATUS -eq 0 ]
 	then
-		print_html_cell_pass
+		print_html_cell_pass "$LINK"
 	else
-		print_html_cell_fail $STATUS
+		print_html_cell_fail $STATUS "$LINK"
 	fi
 }
 
@@ -228,7 +229,7 @@ function run_tests_dir
 			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
 			[ $STATUS -eq 0 ] && let "PASS_VGO += 1"
-			print_html_cell_pass_fail $STATUS "out/$f.vgo"
+			print_html_cell_pass_fail $STATUS " (<a href=\"$f.vgo\">output</a>)"
 
 			if [ $STATUS -ne 0 ]
 			then
@@ -238,7 +239,7 @@ function run_tests_dir
 				FRONTEND=$OFC make out/$f.vg &> /dev/null
 				STATUS=$?
 				[ $STATUS -eq 0 ] && let "PASS_VG += 1"
-				print_html_cell_pass_fail $STATUS "out/$f.vg"
+				print_html_cell_pass_fail $STATUS " (<a href=\"./$f.vg\">output</a>)"
 			else
 				print_html_cell_ignored
 			fi
