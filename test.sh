@@ -210,7 +210,7 @@ function run_tests_dir
 
 		[ $STATUS -eq 0 ] && let "PASS += 1"
 
-		print_html_cell_pass_fail $STATUS
+		print_html_cell_pass_fail $STATUS " (<a href=\"$f.stderr\">log</a>)"
 
 		if [ $TEST_BEHAVIOUR -ne 0 ] && [ $STATUS -eq 0 ]
 		then
@@ -229,7 +229,7 @@ function run_tests_dir
 			FRONTEND=$OFC make out/$f.vgo &> /dev/null
 			STATUS=$?
 			[ $STATUS -eq 0 ] && let "PASS_VGO += 1"
-			print_html_cell_pass_fail $STATUS " (<a href=\"$f.vgo\">output</a>)"
+			print_html_cell_pass_fail $STATUS " (<a href=\"$f.vgo\">log</a>)"
 
 			if [ $STATUS -ne 0 ]
 			then
@@ -239,7 +239,7 @@ function run_tests_dir
 				FRONTEND=$OFC make out/$f.vg &> /dev/null
 				STATUS=$?
 				[ $STATUS -eq 0 ] && let "PASS_VG += 1"
-				print_html_cell_pass_fail $STATUS " (<a href=\"./$f.vg\">output</a>)"
+				print_html_cell_pass_fail $STATUS " (<a href=\"./$f.vg\">log</a>)"
 			else
 				print_html_cell_ignored
 			fi
