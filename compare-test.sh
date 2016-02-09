@@ -28,7 +28,7 @@ then
 	cp $STDOUT_NAME $TGFOR
 else
 	gfortran $SRC_PATH -o $TAOUT &> /dev/null
-	if [ -e $TAOUT ]
+	if [ $? -eq 0 ]
 	then
 		pushd $(dirname $TAOUT)
 		rm -f fort.*
@@ -50,7 +50,7 @@ fi
 
 ## Compile with gfortran OFC output
 $FRONTEND --sema-tree $SRC_PATH 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
-if [ -e $TAOUT ]
+if [ $? -eq 0 ]
 then
 	pushd $(dirname $TAOUT)
 	rm -f fort.*
