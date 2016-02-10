@@ -12,10 +12,10 @@
 !     See the License for the specific language governing permissions and
 !     limitations under the License.
 
-       PROGRAM holerithconstanttest
+       PROGRAM hollerith_constant_test
        IMPLICIT NONE
        INTEGER holarray(3)
        DATA holarray /4HHELL,4HO WO,3HRLD/
        WRITE(*,"(A)") holarray
-       PRINT *, 60HTHE QUICK BROWN FOX JUMPED OVER THE LAZY DOG
-       END PROGRAM holerithconstanttest
+       PRINT *, 60HTHE QUICK BROWN FOX JUMPS OVER THE LAZY DOG
+       END PROGRAM
