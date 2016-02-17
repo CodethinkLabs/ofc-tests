@@ -101,8 +101,9 @@ function print_html_cell_centre
 function print_html_cell_test_file
 {
 	local FILE_PATH=$1
+	local FILE_NAME=$(basename $FILE_PATH)
 
-	printf "<td><a href=\"$TESTS_GIT_URL/blob/$TESTS_GIT_COMMIT/$1\">%s</a></td>" "$(basename $FILE_PATH)"
+	printf "<td><a href=\"$TESTS_GIT_URL/blob/$TESTS_GIT_COMMIT/$1\">%s</a></td><td><a href=\"%s.sema\">%s</a></td>" "$FILE_NAME" "$FILE_PATH" "$FILE_NAME"
 }
 
 function print_html_cell_fail
@@ -188,14 +189,14 @@ function run_tests_dir
 	local FAIL_VGO=0
 
 	print_html_table_start $TEST_DIR/
-	print_html_table_header 'Source File' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Debug)'
+	print_html_table_header 'Source' 'Semantic' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Debug)'
 	for f in $(find $TEST_DIR -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
 		print_html_cell_test_file $f
 
 		# STANDARD
-		FRONTEND=$OFC make out/$f.stderr &> /dev/null
+		FRONTEND=$OFC make out/$f.sema &> /dev/null
 		STATUS=$?
 
 		if [ $IS_NEGATIVE -ne 0 ]

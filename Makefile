@@ -23,6 +23,7 @@ PROGRAMS_NEGATIVE_DUMMY = $(addsuffix .dummy, $(PROGRAMS_NEGATIVE))
 PROGRAMS_ALL = $(PROGRAMS) $(PROGRAMS_SEMA) $(PROGRAMS_NEGATIVE) $(PROGRAMS_TODO)
 
 STDERR_PROGRAMS = $(addprefix out/, $(addsuffix .stderr, $(PROGRAMS_ALL)))
+SEMA_PROGRAMS = $(addprefix out/, $(addsuffix .sema, $(PROGRAMS_ALL)))
 VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS_ALL)))
 VGO_PROGRAMS = $(addprefix out/, $(addsuffix .vgo, $(PROGRAMS_ALL)))
 VG_FLAGS ?= --leak-check=full --error-exitcode=1
@@ -62,8 +63,10 @@ $(TEST_REPORT) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND
 $(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
 	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 > $(TEST_REPORT_LITE)
 
-$(STDERR_PROGRAMS) : out/%.stderr : % out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) --include $(dir $<)include/ $< 2> $@
+$(STDERR_PROGRAMS) : out/%.stderr : out/%.sema
+
+$(SEMA_PROGRAMS) : out/%.sema : % out-dir $(FRONTEND)
+	@$(realpath $(FRONTEND)) --sema-tree --include $(dir $<)include/ $< 2> $(subst .sema,.stderr,$@) > $@
 
 valgrind: $(VG_PROGRAMS)
 
