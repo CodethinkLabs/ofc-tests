@@ -289,7 +289,7 @@ function run_tests
 	local OFC=$1
 	local TEST_VG=$2
 
-	for f in $(find programs -type d | grep -v stdin | grep -v stdout | sort)
+	for f in $(find programs -type d | grep -v stdin | grep -v stdout | grep -v include | sort)
 	do
 		run_tests_dir $f $OFC $TEST_VG $GIT_COMMIT $GIT_BRANCH
 	done

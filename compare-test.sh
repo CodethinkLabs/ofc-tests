@@ -19,6 +19,8 @@ SRC_PATH=$(realpath $2)
 SRC_NAME=$(basename $SRC_PATH)
 SRC_DIR=$(dirname $SRC_PATH)
 
+INC_DIR=$SRC_DIR/include/
+
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 STDOUT_NAME=$SRC_DIR/stdout/$SRC_NAME
 
@@ -27,7 +29,7 @@ if [ -f $STDOUT_NAME ]
 then
 	cp $STDOUT_NAME $TGFOR
 else
-	gfortran $SRC_PATH -o $TAOUT &> /dev/null
+	gfortran -I $INC_DIR $SRC_PATH -o $TAOUT &> /dev/null
 	if [ $? -eq 0 ]
 	then
 		pushd $(dirname $TAOUT)
@@ -49,7 +51,7 @@ else
 fi
 
 ## Compile with gfortran OFC output
-$FRONTEND --sema-tree $SRC_PATH 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
+$FRONTEND --sema-tree --include $INC_DIR $SRC_PATH 2> /dev/null | gfortran -x f77 - -o $TAOUT &> /dev/null
 if [ $? -eq 0 ]
 then
 	pushd $(dirname $TAOUT)

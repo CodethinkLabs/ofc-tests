@@ -37,16 +37,16 @@ all : $(TEST_REPORT)
 test : $(PROGRAMS_DUMMY) $(PROGRAMS_SEMA_DUMMY) $(PROGRAMS_NEGATIVE_DUMMY)
 
 $(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	$(realpath $(FRONTEND)) --no-warn $<
+	$(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $<
 	$(realpath $(COMPARE_SCRIPT)) $(realpath $(FRONTEND)) $<
-	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn $<
+	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $<
 
 $(PROGRAMS_SEMA_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	$(realpath $(FRONTEND)) --no-warn  --sema-tree $<
-	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn $<
+	$(realpath $(FRONTEND)) --no-warn --sema-tree --include $(dir $<)include/ $<
+	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $<
 
 $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	! $(realpath $(FRONTEND)) --no-warn $< 2> /dev/null
+	! $(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $< 2> /dev/null
 
 
 out-dir:
@@ -63,17 +63,17 @@ $(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRO
 	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 > $(TEST_REPORT_LITE)
 
 $(STDERR_PROGRAMS) : out/%.stderr : % out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) $< 2> $@
+	@$(realpath $(FRONTEND)) --include $(dir $<)include/ $< 2> $@
 
 valgrind: $(VG_PROGRAMS)
 
 valgrind-optimized: $(VGO_PROGRAMS)
 
 $(VG_PROGRAMS) : out/%.vg : % out-dir $(FRONTEND_DEBUG)
-	valgrind -v $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) $< > $@ 2>&1
+	valgrind -v $(VG_FLAGS) --track-origins=yes $(realpath $(FRONTEND_DEBUG)) --include $(dir $<)include/ $< > $@ 2>&1
 
 $(VGO_PROGRAMS) : out/%.vgo : % out-dir $(FRONTEND)
-	valgrind -v $(VG_FLAGS) $(realpath $(FRONTEND)) $< > $@ 2>&1
+	valgrind -v $(VG_FLAGS) $(realpath $(FRONTEND)) --include $(dir $<)include/ $< > $@ 2>&1
 
 
 clean:

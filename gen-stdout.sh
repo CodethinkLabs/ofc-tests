@@ -15,12 +15,14 @@ SRC_PATH=$(realpath $1)
 SRC_NAME=$(basename $SRC_PATH)
 SRC_DIR=$(dirname $SRC_PATH)
 
+INC_DIR=$SRC_DIR/include/
+
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 STDOUT_NAME=$SRC_DIR/stdout/$SRC_NAME
 mkdir -p $SRC_DIR/stdout
 
 ## Compile directly with gfortran
-gfortran $SRC_PATH -o $TAOUT &> /dev/null
+gfortran -I $INC_DIR $SRC_PATH -o $TAOUT &> /dev/null
 if [ -e $TAOUT ]
 then
 	pushd $(dirname $TAOUT)
