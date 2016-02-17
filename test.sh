@@ -255,6 +255,7 @@ function run_tests_dir
 
 	print_html_table_row_start
 	print_html_cell_bold "Total"
+	print_html_cell_centre ""
 
 	print_html_cell_centre "$PASS / $TOTAL"
 
