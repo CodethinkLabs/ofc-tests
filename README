@@ -1,12 +1,15 @@
-These are the tests we've used to test our parser.
-Some of them also pass semantic analyis.
+These are the tests we've used to test our parser, ofc. Some of them also pass
+semantic analyis.
+
+If you obtained this repository on its own without the main 'ofc' repository,
+you should clone that from https://github.com/CodethinkLabs/ofc. The makefiles
+and scripts in this repository are not useful on their own.
 
 All test files matching the pattern FM???.{FOR,DAT} were created by:
 The National Institute of Standards and Technology (NIST)
 
 More information can be found at their website:
 http://www.itl.nist.gov/div897/ctg/software.htm
-
 
 FACS46M.FOR is a modified version of the sample program found on page 46
 of the "Fortran Automatic Coding System" manual for the IBM 704.
