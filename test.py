@@ -25,9 +25,12 @@ def runTests(tests, compiler, outputDir, compilerargs):
         stdinFile = os.path.join("programs", "stdin", basename);
         if not os.path.exists(stdinFile):
             stdinFile = "/dev/null" # TODO: Non-posix!
-        cmdline = "%s %s %s > %s/%s.stdout 2> %s/%s.stderr < %s && echo $? > %s/%s.exit"%(compiler, compilerargs, t, outputDir, basename, outputDir, basename, stdinFile, outputDir, basename)
+        cmdline = "%s %s %s > %s/%s.stdout 2> %s/%s.stderr < %s"%(compiler, compilerargs, t, outputDir, basename, outputDir, basename, stdinFile)
         print("running test: %s"%cmdline)
-        subprocess.call(cmdline, shell=True)
+        res = subprocess.call(cmdline, shell=True)
+        exitFile = open(os.path.join(outputDir,basename)+".exit", 'w')
+        exitFile.write("%d\n"%res)
+        exitFile.close()
     
 
 if __name__ == '__main__':
