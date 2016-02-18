@@ -8,11 +8,20 @@ from os import walk
 import subprocess
 import sys
 
+# Anything with these extensions is a Fortran source file,
+# unless it's in one of the 'excludePaths' below.
 fortranExtensions = [ '.f', '.FOR' ]
+
+# Any files in directories called these names are not tests
+# (but subdirectories will still be searched)
+excludePaths = [ 'stdin', 'stdout', 'stderr' ]
+
 
 def findTests():
     tests = []
     for (dirpath, dirnames, filenames) in walk("programs"):
+        (_,tail) = os.path.split(dirpath)
+        if tail in excludePaths: continue
         for f in filenames:
             if any(lambda x: f.endsWith(x) for x in fortranExtensions):
                 tests.append(os.path.join(dirpath,f))
