@@ -103,7 +103,15 @@ function print_html_cell_test_file
 	local FILE_PATH=$1
 	local FILE_NAME=$(basename $FILE_PATH)
 
-	printf "<td><a href=\"$TESTS_GIT_URL/blob/$TESTS_GIT_COMMIT/$1\">%s</a></td><td><a href=\"%s.sema\">%s</a></td>" "$FILE_NAME" "$FILE_PATH" "$FILE_NAME"
+	printf "<td><a href=\"$TESTS_GIT_URL/blob/$TESTS_GIT_COMMIT/$1\">%s</a></td>" "$FILE_NAME"
+}
+
+function print_html_cell_semantic_file
+{
+	local FILE_PATH=$1
+	local FILE_NAME=$(basename $FILE_PATH)
+
+	printf "<td><a href=\"%s.sema\">%s</a></td>" "$FILE_PATH" "$FILE_NAME"
 }
 
 function print_html_cell_fail
@@ -198,6 +206,13 @@ function run_tests_dir
 		# STANDARD
 		FRONTEND=$OFC make out/$f.sema &> /dev/null
 		STATUS=$?
+
+		if [ $STATUS -eq 0 ]
+		then
+			print_html_cell_semantic_file $f
+		else
+			print_html_cell_ignored
+		fi
 
 		if [ $IS_NEGATIVE -ne 0 ]
 		then
