@@ -1,5 +1,5 @@
-      PROGRAM char_int_eq
+      PROGRAM char_int4_eq
         IMPLICIT NONE
-        INTEGER a/538976321/
+        INTEGER*4 a/538976321/
         IF (a .eq. "A") PRINT *, "SUCCESS"
       END PROGRAM
