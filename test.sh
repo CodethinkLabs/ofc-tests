@@ -249,7 +249,7 @@ function run_tests_dir
 
 			if [ $STATUS -ne 0 ]
 			then
-				"FAIL_VGO += 1"
+				let "FAIL_VGO += 1"
 
 				# VALGRIND DEBUG
 				FRONTEND=$OFC make out/$f.vg &> /dev/null
