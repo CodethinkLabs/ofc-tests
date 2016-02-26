@@ -122,6 +122,15 @@ function print_html_cell_fail
 	printf "<td align=center><font color=\"#bf0000\">FAIL (%d)</font>%s</td>" "$STATUS" "$LINK"
 }
 
+function print_html_cell_fail_non_crit
+{
+	local STATUS=$1
+	local LINK=$2
+
+	printf "<td align=center><font color=\"#ff5f00\">FAIL (%d)</font>%s</td>" "$STATUS" "$LINK"
+}
+
+
 function print_html_cell_pass
 {
 	local LINK=$1
@@ -147,6 +156,20 @@ function print_html_cell_pass_fail
 	fi
 }
 
+function print_html_cell_pass_fail_non_crit
+{
+	local STATUS=$1
+	local LINK=$2
+
+	if [ $STATUS -eq 0 ]
+	then
+		print_html_cell_pass "$LINK"
+	else
+		print_html_cell_fail_non_crit $STATUS "$LINK"
+	fi
+}
+
+
 function print_html_table_row_end
 {
 	printf "</tr>\n"
@@ -169,6 +192,7 @@ function run_tests_dir
 	local OFC=$2
 	local TEST_VG=$3
 	local TEST_BEHAVIOUR=1
+	local TEST_REINGEST=1
 
 	local TEST_DIR_NAME=$(basename $TEST_DIR)
 	local IS_NEGATIVE=0
@@ -184,20 +208,23 @@ function run_tests_dir
 		IS_NEGATIVE=1
 		TEST_VG=0
 		TEST_BEHAVIOUR=0
+		TEST_REINGEST=0
 	fi
 
 	local STATUS=-1
+	local STATUS_COMPILE=-1
 	local STATUS_BEHAVIOUR=-1
 
 	local TOTAL=0
 	local PASS=0
 	local PASS_BEHAVIOUR=0
+	local PASS_REINGEST=0
 	local PASS_VG=0
 	local PASS_VGO=0
 	local FAIL_VGO=0
 
 	print_html_table_start $TEST_DIR/
-	print_html_table_header 'Source' 'Semantic' 'Standard' 'Behavioural' 'Valgrind' 'Valgrind (Debug)'
+	print_html_table_header 'Source' 'Semantic' 'Standard' 'Behavioural' 'Reingest' 'Valgrind' 'Valgrind (Debug)'
 	for f in $(find $TEST_DIR -maxdepth 1 -type f | sort)
 	do
 		print_html_table_row_start
@@ -227,14 +254,26 @@ function run_tests_dir
 		[ $STATUS -eq 0 ] && let "PASS += 1"
 
 		print_html_cell_pass_fail $STATUS " (<a href=\"$f.stderr\">log</a>)"
+		STATUS_COMPILE=$STATUS
 
-		if [ $TEST_BEHAVIOUR -ne 0 ] && [ $STATUS -eq 0 ]
+		if [ $TEST_BEHAVIOUR -ne 0 ] && [ $STATUS_COMPILE -eq 0 ]
 		then
 			# GFORTRAN COMPARISON
 			./compare-test.sh $OFC $f &> /dev/null
 			STATUS_BEHAVIOUR=$?
 			print_html_cell_pass_fail $STATUS_BEHAVIOUR
 			[ $STATUS_BEHAVIOUR -eq 0 ] && let "PASS_BEHAVIOUR += 1"
+		else
+			print_html_cell_ignored
+		fi
+
+		if [ $TEST_REINGEST -ne 0 ] && [ $STATUS_COMPILE -eq 0 ]
+		then
+			# REINGEST TEST
+			FRONTEND=$OFC make out/$f.resema &> /dev/null
+			STATUS_BEHAVIOUR=$?
+			print_html_cell_pass_fail_non_crit $STATUS_BEHAVIOUR " (<a href=\"$f.restderr\">log</a>)"
+			[ $STATUS_BEHAVIOUR -eq 0 ] && let "PASS_REINGEST += 1"
 		else
 			print_html_cell_ignored
 		fi
@@ -277,6 +316,13 @@ function run_tests_dir
 	if [ $TEST_BEHAVIOUR -ne 0 ]
 	then
 		print_html_cell_centre "$PASS_BEHAVIOUR / $PASS"
+	else
+		print_html_cell_ignored
+	fi
+
+	if [ $TEST_REINGEST -ne 0 ]
+	then
+		print_html_cell_centre "$PASS_REINGEST / $PASS"
 	else
 		print_html_cell_ignored
 	fi
