@@ -1,10 +1,13 @@
 FRONTEND ?= ofc
 FRONTEND_DEBUG ?= $(FRONTEND)-debug
 
-TEST_SCRIPT = test.sh
+TEST_SOURCE = test.c
+TEST_EXEC = out/test
+
 COMPARE_SCRIPT = compare-test.sh
 TEST_REPORT = out/test.html
 TEST_REPORT_LITE = out/test-lite.html
+TEST_REPORT_THREADS = 5
 
 export TESTS_GIT_COMMIT = $(shell git rev-parse HEAD)
 
@@ -55,15 +58,18 @@ $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE
 out-dir:
 	@mkdir -p out out/programs out/programs/nist out/programs/sema out/programs/negative out/programs/todo
 
+$(TEST_EXEC) : $(TEST_SOURCE) out-dir
+	$(CC) -pthread -Wall -Wextra $< -o $@
+
 test-report : $(TEST_REPORT)
 
 test-report-lite : $(TEST_REPORT_LITE)
 
-$(TEST_REPORT) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
-	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 1 > $(TEST_REPORT)
+$(TEST_REPORT) : out-dir $(TEST_EXEC) $(COMPARE_SCRIPT) $(FRONTEND) $(FRONTEND_DEBUG)
+	@$(realpath $(TEST_EXEC)) $(realpath $(FRONTEND)) 1 $(TEST_REPORT_THREADS) > $(TEST_REPORT)
 
-$(TEST_REPORT_LITE) : out-dir $(TEST_SCRIPT) $(COMPARE_SCRIPT) $(FRONTEND)
-	@$(realpath $(TEST_SCRIPT)) $(realpath $(FRONTEND)) 0 > $(TEST_REPORT_LITE)
+$(TEST_REPORT_LITE) : out-dir $(TEST_EXEC) $(COMPARE_SCRIPT) $(FRONTEND)
+	@$(realpath $(TEST_EXEC)) $(realpath $(FRONTEND)) 0 $(TEST_REPORT_THREADS) > $(TEST_REPORT_LITE)
 
 $(STDERR_PROGRAMS) : %.stderr : %.sema
 
