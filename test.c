@@ -401,7 +401,7 @@ static void job_print(
 	if (job->test_vgo)
 	{
 		sprintf(msg, " (<a href=\"%s.vgo\">log</a>)", job->path);
-		print_html_cell_pass_fail(status, msg);
+		print_html_cell_pass_fail(job->status_vgo, msg);
 
 		if (job->status_vgo == EXIT_SUCCESS)
 			(*pass_vgo)++;
