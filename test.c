@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <libgen.h>
 #include <time.h>
 #include <signal.h>
@@ -778,7 +779,15 @@ static bool job_scan(char* path, bool test_vg)
 		char epath[path_len + strlen(entry->d_name) + 2];
 		sprintf(epath, "%s/%s", path, entry->d_name);
 
-		if (entry->d_type == DT_REG)
+		struct stat s;
+		if (stat(epath, &s) < 0)
+		{
+			closedir_sort(d);
+			return false;
+		}
+
+		int ifmt = (s.st_mode & S_IFMT);
+		if (ifmt == S_IFREG)
 		{
 			job_t* j = job_create(
 				epath, is_negative,
@@ -809,10 +818,19 @@ static bool job_scan(char* path, bool test_vg)
 				return false;
 			}
 		}
-		else if (entry->d_type == DT_DIR)
+		else if (ifmt == S_IFDIR)
 		{
 			if (!job_scan(epath, test_vg))
+			{
+				closedir_sort(d);
 				return false;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "Unknown file type '%s'.\n", epath);
+			closedir_sort(d);
+			return false;
 		}
 	}
 
