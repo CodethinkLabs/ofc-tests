@@ -48,7 +48,7 @@ $(PROGRAMS_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
 	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $<
 
 $(PROGRAMS_SEMA_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
-	$(realpath $(FRONTEND)) --no-warn --sema-tree --include $(dir $<)include/ $<
+	$(realpath $(FRONTEND)) --no-warn --sema-tree --sema-unused-decl --include $(dir $<)include/ $<
 	valgrind -q $(VG_FLAGS) $(realpath $(FRONTEND)) --no-warn --include $(dir $<)include/ $<
 
 $(PROGRAMS_NEGATIVE_DUMMY) : %.dummy : % $(FRONTEND) $(FRONTEND_DEBUG) $(COMPARE_SCRIPT)
@@ -74,12 +74,12 @@ $(TEST_REPORT_LITE) : out-dir $(TEST_EXEC) $(COMPARE_SCRIPT) $(FRONTEND)
 $(STDERR_PROGRAMS) : %.stderr : %.sema
 
 $(SEMA_PROGRAMS) : out/%.sema : % out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) --sema-tree --include $(dir $<)include/ $< 2> $(subst .sema,.stderr,$@) > $@
+	@$(realpath $(FRONTEND)) --sema-tree --sema-unused-decl --include $(dir $<)include/ $< 2> $(subst .sema,.stderr,$@) > $@
 
 $(RESTDERR_PROGRAMS) : %.restderr : %.resema
 
 $(RESEMA_PROGRAMS) : %.resema : %.sema out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) --sema-tree --include $(dir $<)include/ $< 2> $(subst .resema,.restderr,$@) > $@
+	@$(realpath $(FRONTEND)) --sema-tree --sema-unused-decl --include $(dir $<)include/ $< 2> $(subst .resema,.restderr,$@) > $@
 
 valgrind: $(VG_PROGRAMS)
 
