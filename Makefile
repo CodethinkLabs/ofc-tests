@@ -74,12 +74,12 @@ $(TEST_REPORT_LITE) : out-dir $(TEST_EXEC) $(COMPARE_SCRIPT) $(FRONTEND)
 $(STDERR_PROGRAMS) : %.stderr : %.sema
 
 $(SEMA_PROGRAMS) : out/%.sema : % out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) --sema-tree --sema-unused-decl --include $(dir $<)include/ $< 2> $(subst .sema,.stderr,$@) > $@
+	@$(realpath $(FRONTEND)) --sema-tree --include $(dir $<)include/ $< 2> $(subst .sema,.stderr,$@) > $@
 
 $(RESTDERR_PROGRAMS) : %.restderr : %.resema
 
 $(RESEMA_PROGRAMS) : %.resema : %.sema out-dir $(FRONTEND)
-	@$(realpath $(FRONTEND)) --sema-tree --sema-unused-decl --include $(dir $<)include/ $< 2> $(subst .resema,.restderr,$@) > $@
+	@$(realpath $(FRONTEND)) --sema-tree --include $(dir $<)include/ $< 2> $(subst .resema,.restderr,$@) > $@
 
 valgrind: $(VG_PROGRAMS)
 
