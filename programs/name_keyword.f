@@ -1,0 +1,11 @@
+      PROGRAM name_keyword
+        INTEGER SAVE
+        INTEGER SAVE EVERYTHING
+        INTEGER SAVENOTHING
+
+        SAVE = 1
+        SAVE EVERYTHING = 2
+        SAVENOTHING = 3
+
+        PRINT *, SAVE, SAVE EVERYTHING, SAVENOTHING
+      END PROGRAM
