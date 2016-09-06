@@ -205,6 +205,8 @@ typedef struct
 	bool test_reingest;
 	bool test_vg;
 	bool test_vgo;
+	bool test_flang_compile;
+	bool test_flang_behaviour;
 
 	volatile bool complete;
 
@@ -213,6 +215,8 @@ typedef struct
 	int status_reingest;
 	int status_vg;
 	int status_vgo;
+	int status_flang_compile;
+	int status_flang_behaviour;
 } job_t;
 
 static unsigned job_count = 0;
@@ -230,7 +234,8 @@ static job_t* job_create(
 	bool is_negative,
 	bool test_behaviour,
 	bool test_reingest,
-	bool test_vg)
+	bool test_vg,
+	bool test_flang)
 {
 	job_t* j = (job_t*)malloc(sizeof(job_t));
 	if (!j) return NULL;
@@ -248,6 +253,8 @@ static job_t* job_create(
 	j->test_reingest  = test_reingest;
 	j->test_vg        = false;
 	j->test_vgo       = test_vg;
+	j->test_flang_compile   = test_flang;
+	j->test_flang_behaviour = (test_flang && test_behaviour);
 
 	j->complete = false;
 
@@ -256,6 +263,8 @@ static job_t* job_create(
 	j->status_reingest  = false;
 	j->status_vg        = false;
 	j->status_vgo       = false;
+	j->status_flang_compile   = false;
+	j->status_flang_behaviour = false;
 
 	job_t** njob = (job_t**)realloc(job,
 		(sizeof(job_t*) * (job_count + 1)));
@@ -303,6 +312,7 @@ static void* job_exec(
 		job->test_behaviour = false;
 		job->test_reingest  = false;
 		job->test_vgo       = false;
+		job->test_flang_behaviour = false;
 	}
 
 	if (job->test_behaviour)
@@ -336,6 +346,19 @@ static void* job_exec(
 		job->status_vg = system_sane(cmd);
 	}
 
+	if (job->test_flang_compile)
+	{
+		sprintf(cmd, "make out/%s.flang > /dev/null 2>&1", job->path);
+		job->status_flang_compile = system_sane(cmd);
+
+		if (job->test_flang_behaviour)
+		{
+			sprintf(cmd, "./flang-behaviour.sh %s out/%s.flang out/%s.expected out/%s.flang.behaviour > /dev/null 2>&1",
+				job->path, job->path, job->path, job->path);
+			job->status_flang_behaviour = system_sane(cmd);
+		}
+	}
+
 	job->complete = true;
 
 	sem_post(&job_exec_sem);
@@ -350,7 +373,9 @@ static void job_print(
 	unsigned* pass_reingest,
 	unsigned* pass_vgo,
 	unsigned* fail_vgo,
-	unsigned* pass_vg)
+	unsigned* pass_vg,
+	unsigned* pass_flang_compile,
+	unsigned* pass_flang_behaviour)
 {
 	print_html_table_row_start();
 	print_html_cell_test_file(job->path);
@@ -435,6 +460,44 @@ static void job_print(
 	{
 		print_html_cell_ignored();
 	}
+
+	if (job->test_flang_compile)
+	{
+		int flang_status = job->status_flang_compile;
+		if (job->is_negative)
+		{
+			if (flang_status == EXIT_SUCCESS)
+				flang_status = EXIT_FAILURE;
+			else
+				flang_status = EXIT_SUCCESS;
+		}
+
+		sprintf(msg, " (<a href=\"./%s.flang.stderr\">log</a>)", job->path);
+		print_html_cell_pass_fail(flang_status, msg);
+
+		if (job->test_flang_behaviour
+			&& (job->status_flang_compile == EXIT_SUCCESS))
+		{
+			(*pass_flang_compile)++;
+
+			sprintf(msg, " (<a href=\"%s.flang.behaviour\">result</a>, "
+				"<a href=\"%s.expected\">expected</a>)",
+				job->path, job->path);
+			print_html_cell_pass_fail(job->status_flang_behaviour, msg);
+			if (job->status_flang_behaviour == EXIT_SUCCESS)
+				(*pass_flang_behaviour)++;
+		}
+		else
+		{
+			print_html_cell_ignored();
+		}
+	}
+	else
+	{
+		print_html_cell_ignored();
+		if (job->test_flang_behaviour)
+			print_html_cell_ignored();
+	}
 }
 
 
@@ -448,6 +511,7 @@ typedef struct
 	bool test_behaviour;
 	bool test_reingest;
 	bool test_vg;
+	bool test_flang;
 } job_dir_t;
 
 static unsigned    job_dir_count = 0;
@@ -465,7 +529,8 @@ static void job_dir_delete(job_dir_t* jd)
 static job_dir_t* job_dir_create(const char* path,
 	bool test_behaviour,
 	bool test_reingest,
-	bool test_vg)
+	bool test_vg,
+	bool test_flang)
 {
 	job_dir_t* jd = (job_dir_t*)malloc(sizeof(job_dir_t));
 	if (!jd) return NULL;
@@ -483,6 +548,7 @@ static job_dir_t* job_dir_create(const char* path,
 	jd->test_behaviour = test_behaviour;
 	jd->test_reingest  = test_reingest;
 	jd->test_vg        = test_vg;
+	jd->test_flang     = test_flang;
 
 	job_dir_t** njob_dir = (job_dir_t**)realloc(job_dir,
 		(sizeof(job_dir_t*) * (job_dir_count + 1)));
@@ -493,6 +559,7 @@ static job_dir_t* job_dir_create(const char* path,
 	}
 	job_dir = njob_dir;
 	job_dir[job_dir_count++] = jd;
+
 
 	return jd;
 }
@@ -527,6 +594,8 @@ static void job_dir_print(job_dir_t* jd)
 		"Reingest",
 		"Valgrind",
 		"Valgrind (Debug)",
+		"flang",
+		"flang (Behaviour)",
 		NULL
 	};
 	print_html_table_header(headings);
@@ -537,6 +606,8 @@ static void job_dir_print(job_dir_t* jd)
 	unsigned pass_vgo       = 0;
 	unsigned fail_vgo       = 0;
 	unsigned pass_vg        = 0;
+	unsigned pass_flang_compile = 0;
+	unsigned pass_flang_behaviour = 0;
 
 	unsigned i;
 	for (i = 0; i < jd->count; i++)
@@ -550,7 +621,9 @@ static void job_dir_print(job_dir_t* jd)
 			&pass_reingest,
 			&pass_vgo,
 			&fail_vgo,
-			&pass_vg);
+			&pass_vg,
+			&pass_flang_compile,
+			&pass_flang_behaviour);
 	}
 
 	print_html_table_row_start();
@@ -590,6 +663,27 @@ static void job_dir_print(job_dir_t* jd)
 		if (fail_vgo > 0)
 		{
 			sprintf(totals, "%u / %u", pass_vg, fail_vgo);
+			print_html_cell_centre(totals);
+		}
+		else
+		{
+			print_html_cell_ignored();
+		}
+	}
+	else
+	{
+		print_html_cell_ignored();
+		print_html_cell_ignored();
+	}
+
+	if (jd->test_flang)
+	{
+		sprintf(totals, "%u / %u", pass_flang_compile, jd->count);
+		print_html_cell_centre(totals);
+
+		if (pass_flang_compile > 0)
+		{
+			sprintf(totals, "%u / %u", pass_flang_behaviour, pass_flang_compile);
 			print_html_cell_centre(totals);
 		}
 		else
@@ -743,7 +837,7 @@ static struct dirent* readdir_sort(DIR_SORT* ds)
 }
 
 
-static bool job_scan(char* path, bool test_vg)
+static bool job_scan(char* path, bool test_vg, bool test_flang)
 {
 	char* dir_name = basename(path);
 	if ((strncmp(dir_name, ".", 1) == 0)
@@ -802,7 +896,8 @@ static bool job_scan(char* path, bool test_vg)
 				epath, is_negative,
 				test_behaviour,
 				test_reingest,
-				test_vg);
+				test_vg,
+				test_flang);
 			if (!j)
 			{
 				closedir_sort(d);
@@ -813,7 +908,7 @@ static bool job_scan(char* path, bool test_vg)
 			{
 				jd = job_dir_create(
 					path, test_behaviour,
-					test_reingest, test_vg);
+					test_reingest, test_vg, test_flang);
 				if (!jd)
 				{
 					closedir_sort(d);
@@ -829,7 +924,7 @@ static bool job_scan(char* path, bool test_vg)
 		}
 		else if (ifmt == S_IFDIR)
 		{
-			if (!job_scan(epath, test_vg))
+			if (!job_scan(epath, test_vg, test_flang))
 			{
 				closedir_sort(d);
 				return false;
@@ -946,6 +1041,8 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 
 	bool test_vg = false;
+	bool test_flang = true;
+
 	if (argc >= 3)
 	{
 		if (strcmp(argv[2], "1") == 0)
@@ -968,7 +1065,7 @@ int main(int argc, char* argv[])
 	OFC_GIT_URL   = "https://github.com/CodethinkLabs/ofc";
 	TESTS_GIT_URL = "https://github.com/CodethinkLabs/ofc-tests";
 
-	if (!job_scan("programs", test_vg))
+	if (!job_scan("programs", test_vg, test_flang))
 		abort();
 
 	if ((sem_init(&job_exec_sem, 0, 0) != 0)

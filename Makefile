@@ -35,6 +35,7 @@ VG_PROGRAMS = $(addprefix out/, $(addsuffix .vg, $(PROGRAMS_ALL)))
 VGO_PROGRAMS = $(addprefix out/, $(addsuffix .vgo, $(PROGRAMS_ALL)))
 VG_FLAGS ?= --leak-check=full --error-exitcode=1
 EXPECTED_PROGRAMS = $(addprefix out/, $(addsuffix .expected, $(PROGRAMS_BEHAVIOUR)))
+FLANG_PROGRAMS = $(addprefix out/, $(addsuffix .flang, $(PROGRAMS_ALL)))
 
 # Older versions of valgrind don't support this flag.
 VG_FLAGS += $(shell valgrind --help | grep errors-for-leak-kinds > /dev/null 2>&1 && echo "--errors-for-leak-kinds=all")
@@ -97,8 +98,14 @@ $(VGO_PROGRAMS) : out/%.vgo : % out-dir $(FRONTEND)
 $(EXPECTED_PROGRAMS) : out/%.expected : % out-dir $(EXPECTED_SCRIPT)
 	$(realpath $(EXPECTED_SCRIPT)) $< $@
 
+flang: $(FLANG_PROGRAMS)
+
+$(FLANG_PROGRAMS) : out/%.flang : % out-dir $(FRONTEND)
+	@flang -I $(dir $<)include/ -o $@ $< 2> $@.stderr > $@.stdout
+
+
 clean:
 	rm -rf out
 
 
-.PHONY : all clean test test-report test-report-lite valgrind valgrind-optimized $(PROGRAMS_DUMMY) out-dir
+.PHONY : all clean test test-report test-report-lite valgrind valgrind-optimized flang $(PROGRAMS_DUMMY) out-dir
