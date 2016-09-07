@@ -307,8 +307,14 @@ static void* job_exec(
 
 	if (job->test_behaviour)
 	{
-		sprintf(cmd, "./compare-test.sh %s %s > /dev/null 2>&1", ofc, job->path);
+		sprintf(cmd, "FRONTEND=%s make out/%s.expected > /dev/null 2>&1", ofc, job->path);
 		job->status_behaviour = system_sane(cmd);
+		if (job->status_behaviour == EXIT_SUCCESS)
+		{
+			sprintf(cmd, "./behaviour.sh %s out/%s.sema out/%s.expected out/%s.behaviour > /dev/null 2>&1",
+				job->path, job->path, job->path, job->path);
+			job->status_behaviour = system_sane(cmd);
+		}
 	}
 
 	if (job->test_reingest)
@@ -376,7 +382,10 @@ static void job_print(
 
 	if (job->test_behaviour)
 	{
-		print_html_cell_pass_fail(job->status_behaviour, NULL);
+		sprintf(msg, " (<a href=\"%s.behaviour\">result</a>, "
+			"<a href=\"%s.expected\">expected</a>)",
+			job->path, job->path);
+		print_html_cell_pass_fail(job->status_behaviour, msg);
 
 		if (job->status_behaviour == EXIT_SUCCESS)
 			(*pass_behaviour)++;
