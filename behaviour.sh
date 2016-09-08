@@ -24,7 +24,8 @@ INC_DIR=$SRC_DIR/include/
 OFC_SRC_PATH=$(realpath $2)
 
 EXPECTED=$(realpath $3)
-BEHAVIOUR=$(realpath -m $4)
+BEHAVIOUR=$4
+BEHAVIOUR_NAME=$(basename $BEHAVIOUR)
 
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 
@@ -36,9 +37,9 @@ then
 	pushd $ISOLATE
 	if [ -f $STDIN_NAME ]
 	then
-		cat $STDIN_NAME | $BINARY > $BEHAVIOUR
+		cat $STDIN_NAME | $BINARY > $BEHAVIOUR_NAME
 	else
-		$BINARY > $BEHAVIOUR
+		$BINARY > $BEHAVIOUR_NAME
 	fi
 	popd
 	rm -f $BINARY &> /dev/null
@@ -47,6 +48,7 @@ else
 	exit 1
 fi
 
+mv $ISOLATE/$BEHAVIOUR_NAME $BEHAVIOUR
 rm -rf $ISOLATE &> /dev/null
 
 diff $EXPECTED $BEHAVIOUR &> /dev/null

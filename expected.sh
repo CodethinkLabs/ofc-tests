@@ -11,7 +11,8 @@ SRC_DIR=$(dirname $SRC_PATH)
 
 INC_DIR=$SRC_DIR/include/
 
-OUTPUT=$(realpath -m $2)
+OUTPUT=$2
+OUTPUT_NAME=$(basename $OUTPUT)
 
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 STDOUT_NAME=$SRC_DIR/stdout/$SRC_NAME
@@ -40,9 +41,9 @@ else
 		pushd $ISOLATE
 		if [ -f $STDIN_NAME ]
 		then
-			cat $STDIN_NAME | $BINARY > $OUTPUT
+			cat $STDIN_NAME | $BINARY > $OUTPUT_NAME
 		else
-			$BINARY > $OUTPUT
+			$BINARY > $OUTPUT_NAME
 		fi
 		popd
 	else
@@ -50,5 +51,6 @@ else
 		exit 1
 	fi
 
+	mv $ISOLATE/$OUTPUT_NAME $OUTPUT
 	rm -rf $ISOLATE &> /dev/null
 fi
