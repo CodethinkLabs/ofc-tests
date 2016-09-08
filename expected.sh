@@ -11,7 +11,7 @@ SRC_DIR=$(dirname $SRC_PATH)
 
 INC_DIR=$SRC_DIR/include/
 
-OUTPUT=$(realpath $2)
+OUTPUT=$(realpath -m $2)
 
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 STDOUT_NAME=$SRC_DIR/stdout/$SRC_NAME

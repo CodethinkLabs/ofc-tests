@@ -24,7 +24,7 @@ INC_DIR=$SRC_DIR/include/
 OFC_SRC_PATH=$(realpath $2)
 
 EXPECTED=$(realpath $3)
-BEHAVIOUR=$(realpath $4)
+BEHAVIOUR=$(realpath -m $4)
 
 STDIN_NAME=$SRC_DIR/stdin/$SRC_NAME
 
